@@ -41,6 +41,7 @@ class Calculator:
                 week_stats += record.amount
         return week_stats
 
+
 class CaloriesCalculator(Calculator):
     """
     Калькулятор калорий.
@@ -56,9 +57,8 @@ class CaloriesCalculator(Calculator):
         remaind = self.limit - today_calories
 
         if today_calories < self.limit:
-            return (f'Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более {remaind} кКал')
-        else:
-            return 'Хватит есть!'    
+            return (f'Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более {remaind} кКал') 
+        return 'Хватит есть!'    
     
         
 class CashCalculator(Calculator):
@@ -95,7 +95,7 @@ class CashCalculator(Calculator):
             return(f'Денег нет, держись: твой долг - {debt} {self.currency_out}')
 
 
-
+DATE_FORMAT = '%d.%m.%Y'
 class Record:
     """
     Класс для создания записей.
@@ -103,7 +103,6 @@ class Record:
     def __init__(self, amount, comment, date=None):
         self.amount = amount
         self.comment = comment
-        DATE_FORMAT = '%d.%m.%Y'
         if date is not None:
             moment = dt.datetime.strptime(date, DATE_FORMAT)
             self.date = moment.date()
