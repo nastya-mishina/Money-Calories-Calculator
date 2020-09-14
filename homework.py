@@ -2,82 +2,76 @@ import datetime as dt
 
 
 class Calculator:
+    """
+    Родительский класс для классов CashCalculator и CaloriesCalculator.
+    """
     def __init__(self, limit):
         self.limit = limit
         self.records = []
         self.date_to_spending = {}
     
-    '''
-    Данная функция сохраняет наши записи о расходах/приемах пищи.
-    '''
-    def add_record(self, note):
-        self.records.append(note)
+    def add_record(self, record):
+        """
+        Данная функция сохраняет наши записи о расходах/приемах пищи.
+        """
+        self.records.append(record)
         
-        date_formate = note.date
-
-        if note.date in self.date_to_spending:
-            self.date_to_spending[date_formate] += note.amount
-        else:
-            self.date_to_spending[date_formate] = note.amount
-
-
-    '''
-    Считаем сколько денег/каллорий потрачено/съедено сегодня.
-    '''
     def get_today_stats(self):
-        today = dt.datetime.now().date()
+        """
+        Считаем сколько денег/каллорий потрачено/съедено сегодня.
+        """
+        today = dt.date.today()
         today_stats = 0
         
-        if today in self.date_to_spending:
-            today_stats = self.date_to_spending[today]
+        for record in self.records:
+            if record.date == today:
+                today_stats += record.amount
         return today_stats
 
-    '''
-    Считаем сколько денег/каллорий потрачено/съедено за последние 7 дней.
-    '''
     def get_week_stats(self):
-        dates = []
-        today = dt.datetime.now().date()
+        """
+        Считаем сколько денег/каллорий потрачено/съедено за последние 7 дней.
+        """       
+        today = dt.date.today()
+        week_ago = today - dt.timedelta(days=7)
         week_stats = 0
-        dates.append(today)
-        for i in range(1,7):
-            period = dt.timedelta(days=i)
-            seven_day = today - period
-            dates.append(seven_day)
-        
-        for date in dates:
-            if date in self.date_to_spending:
-                week_stats += self.date_to_spending[date]
-        return(week_stats)
+
+        for record in self.records:
+            if week_ago < record.date <= today:
+                week_stats += record.amount
+        return week_stats
 
 class CaloriesCalculator(Calculator):
+    """
+    Калькулятор калорий.
+    """
     def __init__(self, limit):
         super().__init__(limit)
 
-    '''
-    Определяем сколько каллорий можно еще использовать сегодня.
-    '''
     def get_calories_remained(self):
+        """
+        Определяем сколько каллорий можно еще использовать сегодня.
+        """
         today_calories = self.get_today_stats()
         remaind = self.limit - today_calories
 
         if today_calories < self.limit:
-            return(f'Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более {remaind} кКал')
+            return (f'Сегодня можно съесть что-нибудь ещё, но с общей калорийностью не более {remaind} кКал')
         else:
-            return('Хватит есть!')
-    
+            return 'Хватит есть!'    
     
         
-
 class CashCalculator(Calculator):
-
+    """
+    Денежный калькулятор.
+    """
     USD_RATE = 75.05
     EURO_RATE = 88.85
 
-    '''
-    Определяем сколько еще денег можно потратить сегодня в рублях, долларах или евро.
-    '''
-    def get_today_cash_remained(self, currency):    
+    def get_today_cash_remained(self, currency):
+        """
+        Определяем сколько еще денег можно потратить сегодня в рублях, долларах или евро.
+        """    
         today_spend = self.get_today_stats()
         remaind = self.limit - today_spend
         debt = today_spend - self.limit
@@ -93,7 +87,6 @@ class CashCalculator(Calculator):
             remaind = round(remaind/self.EURO_RATE, 2)
             debt = round(debt/self.EURO_RATE, 2)
 
-
         if today_spend < self.limit:
             return(f'На сегодня осталось {remaind} {self.currency_out}')
         elif self.limit == today_spend:
@@ -104,12 +97,15 @@ class CashCalculator(Calculator):
 
 
 class Record:
-    def __init__(self, amount, comment, date=(dt.datetime.now()).date()):
+    """
+    Класс для создания записей.
+    """
+    def __init__(self, amount, comment, date=None):
         self.amount = amount
         self.comment = comment
-        if type(date) is str:
-            moment = dt.datetime.strptime(date, '%d.%m.%Y')
+        DATE_FORMAT = '%d.%m.%Y'
+        if date is not None:
+            moment = dt.datetime.strptime(date, DATE_FORMAT)
             self.date = moment.date()
         else:
-            self.date = date
-
+            self.date = dt.date.today()
